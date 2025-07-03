@@ -25,13 +25,13 @@ func main() {
 		defer file.Close()
 
 		reader := csv.NewReader(file)
-		records, err := reader.ReadAll()
+		todosData, err := reader.ReadAll()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		for _, record := range records {
+		for _, record := range todosData {
 			fmt.Println(record)
 		}
 
@@ -61,7 +61,38 @@ func main() {
 
 		switch programState {
 		case 1:
-			fmt.Println("add new todo")
+			// get user input of new todo description
+			fmt.Print("Write the new todo: ")
+			newTodoDesc, err := userReader.ReadString('\n')
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			newTodoDesc = strings.TrimSpace(newTodoDesc)
+
+			// == preparing new todo data structure
+			lastTodoId, err := strconv.Atoi(todosData[len(todosData)-1][0]) // get last todo id
+			newTodo := []string{
+				strconv.Itoa(lastTodoId + 1),
+				newTodoDesc,
+				strconv.Itoa(0),
+			}
+			todosData = append(todosData, newTodo)
+
+			// write new todos to todo.csv
+			file, err := os.Create("todo.csv")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer file.Close()
+
+			writer := csv.NewWriter(file)
+			defer writer.Flush()
+			if err := writer.WriteAll(todosData); err != nil {
+				fmt.Println(err)
+				return
+			}
 
 		case 2:
 			fmt.Println("remove a todo")
