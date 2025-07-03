@@ -50,6 +50,7 @@ func main() {
 			fmt.Println(record)
 		}
 
+		// get user input for next program action
 		fmt.Print("\n\n\n" +
 			"1) Add new todo\n" +
 			"2) Delete a todo\n" +
@@ -59,14 +60,11 @@ func main() {
 			"What do you want to do [1/2/3/4/0]: ")
 
 		userOptionPick, err := userReader.ReadString('\n')
-
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-
 		userOptionPickInt, err := strconv.Atoi(strings.TrimSpace(userOptionPick))
-
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -85,10 +83,15 @@ func main() {
 			}
 			newTodoDesc = strings.TrimSpace(newTodoDesc)
 
-			// == preparing new todo data structure
+			// preparing new todo data structure
 			lastTodoId, err := strconv.Atoi(todosData[len(todosData)-1][0]) // get last todo id
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			newTodoId := strconv.Itoa(lastTodoId + 1)
 			newTodo := []string{
-				strconv.Itoa(lastTodoId + 1),
+				newTodoId,
 				newTodoDesc,
 				strconv.Itoa(0),
 			}
@@ -109,8 +112,57 @@ func main() {
 				return
 			}
 		case 2:
-			fmt.Println("remove a todo")
+			var todoIdRemove int
+			for {
+				fmt.Print("Enter id of todo you want to remove: ")
+				todoIdRemoveString, err := userReader.ReadString('\n')
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				todoIdRemoveString = strings.TrimSpace(todoIdRemoveString)
 
+				todoIdRemove, err = strconv.Atoi(todoIdRemoveString)
+				if err == nil {
+					break
+				}
+
+				fmt.Println("Invalid input, please enter a number")
+			}
+
+			// update todos data (delete the todo the user is selected)
+			var newTodosData [][]string
+			newId := 1
+			for i, todo := range todosData {
+				if i == 0 {
+					continue
+				}
+				todoId, err := strconv.Atoi(todo[0])
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				if todoId != todoIdRemove {
+					todo[0] = strconv.Itoa(newId)
+					newTodosData = append(newTodosData, todo)
+					newId++
+				}
+			}
+
+			// write new todos data to todo.csv
+			file, err := os.Create("todo.csv")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer file.Close()
+
+			writer := csv.NewWriter(file)
+			defer writer.Flush()
+			if err := writer.WriteAll(newTodosData); err != nil {
+				fmt.Println(err)
+				return
+			}
 		case 3:
 			fmt.Println("toggle todo completion")
 
