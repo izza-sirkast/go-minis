@@ -5,15 +5,30 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 )
+
+func clearTerminal() {
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/c", "cls")
+	} else {
+		cmd = exec.Command("clear")
+	}
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+}
 
 func main() {
 	userReader := bufio.NewReader(os.Stdin)
 	programState := 10
 
 	for programState != 0 {
+		clearTerminal()
+
 		fmt.Println("todo app")
 
 		// get todo data
@@ -93,7 +108,6 @@ func main() {
 				fmt.Println(err)
 				return
 			}
-
 		case 2:
 			fmt.Println("remove a todo")
 
