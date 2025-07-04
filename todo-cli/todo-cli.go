@@ -84,11 +84,15 @@ func main() {
 			newTodoDesc = strings.TrimSpace(newTodoDesc)
 
 			// preparing new todo data structure
-			lastTodoId, err := strconv.Atoi(todosData[len(todosData)-1][0]) // get last todo id
-			if err != nil {
-				fmt.Println(err)
-				return
+			lastTodoId := 1
+			if len(todosData) >= 2 {
+				lastTodoId, err = strconv.Atoi(todosData[len(todosData)-1][0]) // get last todo id
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
 			}
+
 			newTodoId := strconv.Itoa(lastTodoId + 1)
 			newTodo := []string{
 				newTodoId,
