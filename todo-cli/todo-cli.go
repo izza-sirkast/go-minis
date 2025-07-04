@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+var header []string = []string{
+	"id", "description", "completed",
+}
+
 func clearTerminal() {
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
@@ -20,6 +24,11 @@ func clearTerminal() {
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Run()
+}
+
+func addHeaderToTodos(todosData [][]string) [][]string {
+	newTodos := append([][]string{header}, todosData...)
+	return newTodos
 }
 
 func main() {
@@ -33,21 +42,58 @@ func main() {
 
 		// get todo data
 		file, err := os.Open("todo.csv")
-		if err != nil {
+		if os.IsNotExist(err) {
+			_, err := os.Create("todo.csv")
+			if err != nil {
+				fmt.Println("err")
+				return
+			}
+
+			file, err = os.Open("todo.csv")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		} else if err != nil {
 			fmt.Println(err)
 			return
 		}
 		defer file.Close()
 
 		reader := csv.NewReader(file)
-		todosData, err := reader.ReadAll()
+		todosDataAll, err := reader.ReadAll()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		for _, record := range todosData {
+		// check if csv has header
+		if len(todosDataAll) <= 0 || todosDataAll[0][0] != "id" {
+			file, err := os.Create("todo.csv")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer file.Close()
+
+			todosDataAll = addHeaderToTodos(todosDataAll)
+			writer := csv.NewWriter(file)
+			defer writer.Flush()
+			if err := writer.WriteAll(todosDataAll); err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+
+		for _, record := range todosDataAll {
 			fmt.Println(record)
+		}
+
+		var todosData [][]string
+		if len(todosDataAll) > 1 {
+			todosData = todosDataAll[1:]
+		} else {
+			todosData = [][]string{}
 		}
 
 		// get user input for next program action
@@ -88,8 +134,8 @@ func main() {
 			newTodoDesc = strings.TrimSpace(newTodoDesc)
 
 			// preparing new todo data structure
-			lastTodoId := 1
-			if len(todosData) >= 2 {
+			lastTodoId := 0
+			if len(todosData) > 0 { // if todos data not empty
 				lastTodoId, err = strconv.Atoi(todosData[len(todosData)-1][0]) // get last todo id
 				if err != nil {
 					fmt.Println(err)
@@ -113,6 +159,7 @@ func main() {
 			}
 			defer file.Close()
 
+			todosData = addHeaderToTodos(todosData)
 			writer := csv.NewWriter(file)
 			defer writer.Flush()
 			if err := writer.WriteAll(todosData); err != nil {
@@ -141,10 +188,7 @@ func main() {
 			// update todos data (delete the todo the user is selected)
 			var newTodosData [][]string
 			newId := 1
-			for i, todo := range todosData {
-				if i == 0 {
-					continue
-				}
+			for _, todo := range todosData {
 				todoId, err := strconv.Atoi(todo[0])
 				if err != nil {
 					fmt.Println(err)
@@ -165,6 +209,7 @@ func main() {
 			}
 			defer file.Close()
 
+			newTodosData = addHeaderToTodos(newTodosData)
 			writer := csv.NewWriter(file)
 			defer writer.Flush()
 			if err := writer.WriteAll(newTodosData); err != nil {
@@ -191,10 +236,7 @@ func main() {
 			}
 
 			// update todos data (toggle completion status of the todo the user is selected)
-			for i, todo := range todosData {
-				if i == 0 {
-					continue
-				}
+			for _, todo := range todosData {
 				todoId, err := strconv.Atoi(todo[0])
 				if err != nil {
 					fmt.Println(err)
@@ -217,6 +259,7 @@ func main() {
 			}
 			defer file.Close()
 
+			todosData = addHeaderToTodos(todosData)
 			writer := csv.NewWriter(file)
 			defer writer.Flush()
 			if err := writer.WriteAll(todosData); err != nil {
@@ -226,11 +269,7 @@ func main() {
 		case 4: // remove all completed todos
 			var newTodosData [][]string
 			newTodoId := 1
-			for i, todo := range todosData {
-				if i == 0 {
-					continue
-				}
-
+			for _, todo := range todosData {
 				if todo[2] == strconv.Itoa(0) {
 					todo[0] = strconv.Itoa(newTodoId)
 					newTodosData = append(newTodosData, todo)
@@ -246,6 +285,7 @@ func main() {
 			}
 			defer file.Close()
 
+			newTodosData = addHeaderToTodos(newTodosData)
 			writer := csv.NewWriter(file)
 			defer writer.Flush()
 			if err := writer.WriteAll(newTodosData); err != nil {
@@ -257,25 +297,4 @@ func main() {
 
 		}
 	}
-
-	// file, err := os.Create("todo.csv")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// defer file.Close()
-
-	// writer := csv.NewWriter(file)
-	// defer writer.Flush()
-
-	// data := [][]string{
-	// 	{"id", "description", "status"},
-	// 	{"1", "Learn go", "0"},
-	// 	{"2", "Working on projects", "1"},
-	// }
-
-	// if err := writer.WriteAll(data); err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
 }
