@@ -223,9 +223,35 @@ func main() {
 				fmt.Println(err)
 				return
 			}
-		case 4:
-			fmt.Println("remove all completed todos")
+		case 4: // remove all completed todos
+			var newTodosData [][]string
+			newTodoId := 1
+			for i, todo := range todosData {
+				if i == 0 {
+					continue
+				}
 
+				if todo[2] == strconv.Itoa(0) {
+					todo[0] = strconv.Itoa(newTodoId)
+					newTodosData = append(newTodosData, todo)
+					newTodoId++
+				}
+			}
+
+			// write new todos data to todo.csv
+			file, err := os.Create("todo.csv")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer file.Close()
+
+			writer := csv.NewWriter(file)
+			defer writer.Flush()
+			if err := writer.WriteAll(newTodosData); err != nil {
+				fmt.Println(err)
+				return
+			}
 		case 0:
 			fmt.Println("good bye...")
 
