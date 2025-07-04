@@ -62,6 +62,20 @@ func showTodos(todos [][]string) {
 	}
 }
 
+func printTitle() {
+	fmt.Print(`
+ ___       ___   __    __     ____     ________     ____     ______       ____    
+(  (       )  ) (  \  /  )   (    )   (___  ___)   / __ \   (_  __ \     / __ \   
+ \  \  _  /  /   \ (__) /    / /\ \       ) )     / /  \ \    ) ) \ \   / /  \ \  
+  \  \/ \/  /     ) __ (    ( (__) )     ( (     ( ()  () )  ( (   ) ) ( ()  () ) 
+   )   _   (     ( (  ) )    )    (       ) )    ( ()  () )   ) )  ) ) ( ()  () ) 
+   \  ( )  /      ) )( (    /  /\  \     ( (      \ \__/ /   / /__/ /   \ \__/ /  
+    \_/ \_/      /_/  \_\  /__(  )__\    /__\      \____/   (______/     \____/   
+                                                                                  
+
+`)
+}
+
 func addHeaderToTodos(todosData [][]string) [][]string {
 	newTodos := append([][]string{header}, todosData...)
 	return newTodos
@@ -73,6 +87,8 @@ func main() {
 
 	for programState != 0 {
 		clearTerminal()
+
+		printTitle()
 
 		// get todo data
 		file, err := os.Open("todo.csv")
