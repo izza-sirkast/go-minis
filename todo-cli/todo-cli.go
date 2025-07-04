@@ -163,9 +163,58 @@ func main() {
 				fmt.Println(err)
 				return
 			}
-		case 3:
-			fmt.Println("toggle todo completion")
+		case 3: // toggle todo completion status
+			var todoIdToggle int
+			for {
+				fmt.Print("Enter id of todo you want to toggle it's completion: ")
+				todoIdToggleString, err := userReader.ReadString('\n')
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				todoIdToggleString = strings.TrimSpace(todoIdToggleString)
 
+				todoIdToggle, err = strconv.Atoi(todoIdToggleString)
+				if err == nil {
+					break
+				}
+
+				fmt.Println("Invalid input, please enter a number")
+			}
+
+			// update todos data (toggle completion status of the todo the user is selected)
+			for i, todo := range todosData {
+				if i == 0 {
+					continue
+				}
+				todoId, err := strconv.Atoi(todo[0])
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				if todoId == todoIdToggle {
+					if todo[2] == strconv.Itoa(0) {
+						todo[2] = strconv.Itoa(1)
+					} else {
+						todo[2] = strconv.Itoa(0)
+					}
+				}
+			}
+
+			// write new todos data to todo.csv
+			file, err := os.Create("todo.csv")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer file.Close()
+
+			writer := csv.NewWriter(file)
+			defer writer.Flush()
+			if err := writer.WriteAll(todosData); err != nil {
+				fmt.Println(err)
+				return
+			}
 		case 4:
 			fmt.Println("remove all completed todos")
 
