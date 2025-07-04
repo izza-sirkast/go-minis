@@ -26,6 +26,42 @@ func clearTerminal() {
 	cmd.Run()
 }
 
+func showTodos(todos [][]string) {
+	var longestId, longestDesc int = 0, 0
+	for _, todo := range todos {
+		if len(todo[0]) > longestId {
+			longestId = len(todo[0])
+		}
+		if len(todo[1]) > longestDesc {
+			longestDesc = len(todo[1])
+		}
+	}
+
+	for i, todo := range todos {
+		padId := strings.Repeat(" ", longestId-len(todo[0]))
+		padDesc := strings.Repeat(" ", longestDesc-len(todo[1]))
+
+		if i == 0 {
+			fmt.Printf("| %s%s | %s%s | %s |\n", todo[0], padId, todo[1], padDesc, todo[2])
+
+			sepId := strings.Repeat("-", longestId+2)
+			sepDesc := strings.Repeat("-", longestDesc+2)
+			sepComp := strings.Repeat("-", 11)
+			fmt.Printf("|%s|%s|%s|\n", sepId, sepDesc, sepComp)
+		} else {
+			var mark string
+			if todo[2] == "0" {
+				mark = "❎"
+			} else if todo[2] == "1" {
+				mark = "✅"
+			}
+
+			fmt.Printf("| %s%s | %s%s |    %s     |\n", todo[0], padId, todo[1], padDesc, mark)
+		}
+
+	}
+}
+
 func addHeaderToTodos(todosData [][]string) [][]string {
 	newTodos := append([][]string{header}, todosData...)
 	return newTodos
@@ -37,8 +73,6 @@ func main() {
 
 	for programState != 0 {
 		clearTerminal()
-
-		fmt.Println("todo app")
 
 		// get todo data
 		file, err := os.Open("todo.csv")
@@ -85,9 +119,7 @@ func main() {
 			}
 		}
 
-		for _, record := range todosDataAll {
-			fmt.Println(record)
-		}
+		showTodos(todosDataAll)
 
 		var todosData [][]string
 		if len(todosDataAll) > 1 {
