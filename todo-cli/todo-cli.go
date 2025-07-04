@@ -56,18 +56,22 @@ func main() {
 			"2) Delete a todo\n" +
 			"3) Toggle completion status\n" +
 			"4) Delete all completed todos\n" +
-			"0) Exit program\n" +
-			"What do you want to do [1/2/3/4/0]: ")
+			"0) Exit program\n")
 
-		userOptionPick, err := userReader.ReadString('\n')
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		userOptionPickInt, err := strconv.Atoi(strings.TrimSpace(userOptionPick))
-		if err != nil {
-			fmt.Println(err)
-			return
+		var userOptionPickInt int
+		for {
+			fmt.Print("What do you want to do [1/2/3/4/0]: ")
+			userOptionPick, err := userReader.ReadString('\n')
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			userOptionPickInt, err = strconv.Atoi(strings.TrimSpace(userOptionPick))
+			if err == nil {
+				break
+			}
+
+			fmt.Println("Invalid input")
 		}
 
 		programState = userOptionPickInt
